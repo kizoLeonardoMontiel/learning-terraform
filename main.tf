@@ -49,7 +49,7 @@ resource "aws_instance" "blog" {
 module "s3_bucket" {
   source = "terraform-aws-modules/s3-bucket/aws"
 
-  bucket = "blog_s3_bucket-19-09-1998"
+  bucket = "blogs3bucket19982310"
   acl    = "private"
 
   control_object_ownership = true

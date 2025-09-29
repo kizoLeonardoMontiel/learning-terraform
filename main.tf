@@ -14,10 +14,6 @@ data "aws_ami" "app_ami" {
   owners = ["979382823631"] # Bitnami
 }
 
-data "aws_vpc" "default" {
-  default = true
-}
-
 module "blog_vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -43,6 +39,43 @@ resource "aws_instance" "blog" {
   
   tags = {
     Name = "HelloWorld"
+  }
+}
+
+module "alb" {
+  source = "terraform-aws-modules/alb/aws"
+  
+  name            = "blog-alb"
+
+  vpc_id          = module.blog_vpc.vpc_id
+  subnets         = module.blog_vpc.public_subnets
+  security_groups = module.blog_sg.security_group_id
+
+  target_groups = [
+    {
+      name_prefix      = "blog-"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
+      targets = {
+        main_target = {
+          target_id      = aws_instance.blog.id
+          port           = 80
+        }
+      }
+    }
+  ]
+
+  http_tcp_listener = [
+    {
+      port               = 80
+      protocol           = http
+      target_group_index = 0
+    }
+  ]
+
+  tags = {
+    Environment = "dev"
   }
 }
 
